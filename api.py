@@ -12,17 +12,26 @@ class FacebookApi(object):
     app_id = ''
     secret_id = ''
     domain = ''
+    access_token = ''
 
-    def __init__(self, app_id, secret_id, domain):
-        self.app_id = app_id
-        self.secret_id = secret_id
-        self.domain = domain
+    def __init__(self, app_id='', secret_id='', domain='', access_token='', user_id='me'):
+        self.app_id = app_id or settings.FACEBOOK_APP_ID
+        self.secret_id = secret_id or settings.FACEBOOK_APP_SECRET
+        self.domain = domain or settings.FACEBOOK_REDIRECT_DOMAIN
+        self.access_token = access_token
 
-    def login_url(self, scope=()):
+        if not access_token:
+            item, created = models.SocialMediaProfile.objects.get_or_create(pk=1)
+            self.access_token = item.fb_access_token
+
+    def login_url(self, scopes=()):
+
+        scopes = scopes or settings.FACEBOOK_SCOPES
+
         # Return a login URL
         return "https://www.facebook.com/dialog/oauth?client_id={}&" \
                "redirect_uri=http://{}{}&auth_type=rerequest&scope={}" \
-            .format(self.app_id, self.domain, reverse('social_media_facebook'), ','.join(scope))
+            .format(self.app_id, self.domain, reverse('social_media_facebook'), ','.join(scopes))
 
     def get_access_token(self, code):
         # Get a Access Token
@@ -48,9 +57,7 @@ class FacebookApi(object):
         if message.link:
             data['link'] = message.link
 
-        item = models.SocialMediaProfile.objects.get(pk=1)
-
-        url = 'https://graph.facebook.com/me/feed?access_token=' + item.fb_access_token
+        url = 'https://graph.facebook.com/me/feed?access_token=' + self.access_token
 
         data = urllib.urlencode(data)
         req = urllib2.Request(url, data)
@@ -69,8 +76,7 @@ class FacebookApi(object):
         """
 
         if message.fb_id:
-            item = models.SocialMediaProfile.objects.get(pk=1)
-            url = 'https://graph.facebook.com/' + message.fb_id + '?summary=true&access_token=' + item.fb_access_token
+            url = 'https://graph.facebook.com/' + message.fb_id + '?summary=true&access_token=' + self.access_token
             f = urllib.urlopen(url)
             ret = json.loads(f.read())
 
@@ -84,7 +90,7 @@ class FacebookApi(object):
         if message.fb_id:
             item = models.SocialMediaProfile.objects.get(pk=1)
             url = 'https://graph.facebook.com/' + message.fb_id + '/' + info + \
-                  '?summary=true&access_token=' + item.fb_access_token
+                  '?summary=true&access_token=' + self.access_token
             f = urllib.urlopen(url)
             ret = json.loads(f.read())
 
@@ -99,5 +105,21 @@ class FacebookApi(object):
 
     def get_comments(self, message):
         return self.get_post_info(message, 'comments')
+
+    def get_pages(self):
+        url = 'https://graph.facebook.com/me/accounts?access_token=' + self.access_token
+        f = urllib.urlopen(url)
+        ret = json.loads(f.read())
+
+        for page in ret['data']:
+            obj, created = models.NetWorks.objects.get_or_create(network_id=page['id'], network='Facebook')
+            obj.network_id = page['id']
+            obj.name = page['name']
+            obj.access_token = page['access_token']
+            obj.network = 'Facebook'
+
+            obj.save()
+
+        return ret
 
 facebook_api = FacebookApi(settings.FACEBOOK_APP_ID, settings.FACEBOOK_APP_SECRET, settings.FACEBOOK_REDIRECT_DOMAIN)

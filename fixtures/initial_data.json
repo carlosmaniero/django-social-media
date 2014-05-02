@@ -3,14 +3,17 @@
     "model": "social_media.networks",
     "pk": 1,
     "fields": {
-      "name": "Facebook"
+      "network_id": "me",
+      "name": "Me",
+      "network": "Facebook"
     }
   },
   {
     "model": "social_media.networks",
     "pk": 2,
     "fields": {
-      "name": "Twitter"
+      "name": "Me",
+      "network": "Twitter"
     }
   }
 ]
