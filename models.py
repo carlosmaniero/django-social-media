@@ -11,7 +11,7 @@ class SocialMediaProfile(Model):
     fb_access_token = CharField(verbose_name=_("Facebook Access Token"), max_length=256, null=True, blank=True)
 
 
-class NetWorks(Model):
+class NetWork(Model):
     network = CharField(max_length=32, null=True, blank=True)
     network_id = CharField(max_length=32, null=True, blank=True)
     name = CharField(max_length=32, null=True, blank=True)
@@ -27,12 +27,10 @@ class NetWorks(Model):
         return self.__str__()
 
 
-class SocialMediaPost(Model):
-    message = TextField(verbose_name=_("Publication text"), null=True, blank=True)
-    link = URLField(verbose_name=_('Post URL'), null=True, blank=True)
-    publish_at = DateTimeField(verbose_name=_('Publish at'), null=True, blank=True, help_text=_("Blank to now"))
-    network = ForeignKey(NetWorks)
-    fb_id = CharField(max_length=32, null=True, blank=True)
+class NetworkPosts(Model):
+    network = ForeignKey(NetWork)
+    post = ForeignKey('SocialMediaPost')
+    network_post_id = CharField(max_length=256, null=True, blank=True)
     _fb_data = None
     _fb_likes = None
     _fb_comments = None
@@ -41,6 +39,7 @@ class SocialMediaPost(Model):
     @property
     def fb_data(self):
         from api import facebook_api
+        print 'ashdsauihdusa'
         if not self._fb_data:
             self._fb_data = facebook_api.get_post(self)
         return self._fb_data
@@ -51,7 +50,6 @@ class SocialMediaPost(Model):
         if not self._fb_likes:
             self._fb_likes = facebook_api.get_likes(self)
         return self._fb_likes
-
 
     @property
     def fb_comments(self):
@@ -69,13 +67,26 @@ class SocialMediaPost(Model):
         return self._fb_shares
 
 
+class SocialMediaPost(Model):
+    message = TextField(verbose_name=_("Publication text"), null=True, blank=True)
+    link = URLField(verbose_name=_('Post URL'), null=True, blank=True)
+    publish_at = DateTimeField(verbose_name=_('Publish at'), null=True, blank=True, help_text=_("Blank to now"))
+    networks = ManyToManyField(NetWork, through=NetworkPosts)
+    fb_id = CharField(max_length=32, null=True, blank=True)
+
+    def get_networks(self):
+        return NetworkPosts.objects.filter(post=self)
+
+
 def publish_now(sender, **kwargs):
     # the object which is saved can be accessed via kwargs 'instance' key.
     obj = kwargs['instance']
-    if not obj.publish_at:
-        obj.publish_at = now()
+
+    if not obj.post.publish_at:
         try:
             from api import FacebookApi
+
+            print obj.network.network
 
             if obj.network.network == 'Facebook':
 
@@ -84,10 +95,10 @@ def publish_now(sender, **kwargs):
                     access_token = obj.network.access_token
 
                 facebook_api = FacebookApi(access_token=access_token, user_id=obj.network.network_id)
-                facebook_api.publish(obj)
+                facebook_api.publish(obj, obj.post)
 
         except Exception as e:
-            messages.error(_('Facebok API error:' + ' ' + e.message))
+            raise e
 
-pre_save.connect(publish_now, sender=SocialMediaPost)
+pre_save.connect(publish_now, sender=NetworkPosts)
 

@@ -1,6 +1,6 @@
 [
   {
-    "model": "social_media.networks",
+    "model": "social_media.network",
     "pk": 1,
     "fields": {
       "network_id": "me",
@@ -9,7 +9,7 @@
     }
   },
   {
-    "model": "social_media.networks",
+    "model": "social_media.network",
     "pk": 2,
     "fields": {
       "name": "Me",

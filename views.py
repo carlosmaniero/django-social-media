@@ -12,7 +12,7 @@ class FacebookTokenView(View):
             item = SocialMediaProfile.objects.get(pk=1)
 
             item.fb_access_token = facebook_api.get_access_token(request.GET['code'])
-            facebook_api.get_pages(item.fb_access_token)
+            facebook_api.get_pages()
             item.save()
 
             return HttpResponseRedirect('/admin/social_media/socialmediaprofile/1/')

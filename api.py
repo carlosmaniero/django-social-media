@@ -43,9 +43,10 @@ class FacebookApi(object):
 
         f = urllib.urlopen(url)
         parsed = urlparse.parse_qs(f.read())
-        return parsed['access_token'][0]
+        self.access_token = parsed['access_token'][0]
+        return self.access_token
 
-    def publish(self, message):
+    def publish(self, obj, message):
         """
         Publish in Facebook Feed
         :rtype : basestring (Facebook id)
@@ -64,7 +65,7 @@ class FacebookApi(object):
         response = urllib2.urlopen(req)
         ret = json.loads(response.read())
 
-        message.fb_id = ret['id']
+        obj.network_post_id = ret['id']
 
         return ret['id']
 
@@ -75,8 +76,8 @@ class FacebookApi(object):
         :param message: SocialMediaPost
         """
 
-        if message.fb_id:
-            url = 'https://graph.facebook.com/' + message.fb_id + '?summary=true&access_token=' + self.access_token
+        if message.network_post_id:
+            url = 'https://graph.facebook.com/' + message.network_post_id + '?summary=true&access_token=' + self.access_token
             f = urllib.urlopen(url)
             ret = json.loads(f.read())
 
@@ -87,9 +88,9 @@ class FacebookApi(object):
         return {}
 
     def get_post_info(self, message, info):
-        if message.fb_id:
+        if message.network_post_id:
             item = models.SocialMediaProfile.objects.get(pk=1)
-            url = 'https://graph.facebook.com/' + message.fb_id + '/' + info + \
+            url = 'https://graph.facebook.com/' + message.network_post_id + '/' + info + \
                   '?summary=true&access_token=' + self.access_token
             f = urllib.urlopen(url)
             ret = json.loads(f.read())
@@ -112,7 +113,7 @@ class FacebookApi(object):
         ret = json.loads(f.read())
 
         for page in ret['data']:
-            obj, created = models.NetWorks.objects.get_or_create(network_id=page['id'], network='Facebook')
+            obj, created = models.NetWork.objects.get_or_create(network_id=page['id'], network='Facebook')
             obj.network_id = page['id']
             obj.name = page['name']
             obj.access_token = page['access_token']

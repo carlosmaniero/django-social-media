@@ -1,12 +1,12 @@
 from django.conf import settings
 from django.conf.urls import patterns
 from django.contrib import admin
-from django.forms import ModelForm, HiddenInput
+from django.forms import ModelForm, HiddenInput, ModelMultipleChoiceField
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
 from api import facebook_api
 from fields import LinkWidget
-from models import SocialMediaProfile, SocialMediaPost
+from models import SocialMediaProfile, SocialMediaPost, NetWork, NetworkPosts
 
 
 class SocialMediaProfileForm(ModelForm):
@@ -47,12 +47,31 @@ class SocialMediaProfileAdmin(admin.ModelAdmin):
         return my_urls + urls
 
 
+class SocialMediaPostForm(ModelForm):
+
+    networks = ModelMultipleChoiceField(queryset=NetWork.objects.all())
+
+    def save_m2m(self):
+        obj = self.instance
+        for network in self.cleaned_data['networks']:
+            NetworkPosts.objects.create(network=network, post=obj)
+
+    def save(self, commit=True):
+        obj = super(SocialMediaPostForm, self).save(commit=True)
+        return obj
+
+    class Meta:
+        model = SocialMediaPost
+        exclude = ('networks',)
+
+
 class SocialMediaPostAdmin(admin.ModelAdmin):
-    list_display = ['publish_at', 'message', 'link', 'network']
-    list_filter = ['network__name']
+    list_display = ['message', 'link']
+    list_filter = ['networks__name']
     search_fields = ['message', 'link']
     date_hierarchy = 'publish_at'
-    exclude = ('fb_id',)
+    exclude = ('fb_id', 'networks')
+    form = SocialMediaPostForm
 
 admin.site.register(SocialMediaProfile, SocialMediaProfileAdmin)
 admin.site.register(SocialMediaPost, SocialMediaPostAdmin)
