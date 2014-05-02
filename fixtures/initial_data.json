@@ -1,0 +1,16 @@
+[
+  {
+    "model": "social_media.networks",
+    "pk": 1,
+    "fields": {
+      "name": "Facebook"
+    }
+  },
+  {
+    "model": "social_media.networks",
+    "pk": 2,
+    "fields": {
+      "name": "Twitter"
+    }
+  }
+]

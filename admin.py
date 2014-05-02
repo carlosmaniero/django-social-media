@@ -3,10 +3,10 @@ from django.conf.urls import patterns
 from django.contrib import admin
 from django.forms import ModelForm, HiddenInput
 from django.http import HttpResponseRedirect
-from api.facebook import facebook_api
-from fields import LinkWidget
-from models import SocialMediaProfile
 from django.utils.translation import ugettext as _
+from api import facebook_api
+from fields import LinkWidget
+from models import SocialMediaProfile, SocialMediaPost
 
 
 class SocialMediaProfileForm(ModelForm):
@@ -23,8 +23,8 @@ class SocialMediaProfileForm(ModelForm):
                                                                facebook_api.login_url(settings.FACEBOOK_SCOPES))
 
             if self.instance.fb_access_token:
-                self.fields['fb_access_token'].help_text = _('Current:') + ' ' + \
-                                                           self.instance.fb_access_token[0:20] + '...'
+                self.fields['fb_access_token'].help_text = \
+                    _('Current:') + ' ' + self.instance.fb_access_token[0:20] + '...'
 
     class Meta:
         model = SocialMediaProfile
@@ -47,3 +47,4 @@ class SocialMediaProfileAdmin(admin.ModelAdmin):
         return my_urls + urls
 
 admin.site.register(SocialMediaProfile, SocialMediaProfileAdmin)
+admin.site.register(SocialMediaPost)
