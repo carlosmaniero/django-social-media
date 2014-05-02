@@ -39,7 +39,6 @@ class NetworkPosts(Model):
     @property
     def fb_data(self):
         from api import facebook_api
-        print 'ashdsauihdusa'
         if not self._fb_data:
             self._fb_data = facebook_api.get_post(self)
         return self._fb_data

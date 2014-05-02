@@ -6,21 +6,25 @@
 
             {% for message in messages %}
                 <h1>{{ message.network.name }} {{ message.network.network }} profile information</h1>
-                <fieldset class="module aligned ">
-                    <div class="form-row">
-                        <div>
-                            <label>Publication URL:</label>
-                            <a href="{{ message.fb_data.link }}" target="_blank">{{ message.fb_data.link }}</a>
+                <fieldset class="module aligned grp-module">
+                    <div class="form-row grp-row grp-cells-1">
+                        <div class="l-2c-fluid l-d-4">
+                            <div class="c-1">
+                                <label>Publication URL:</label>
+                            </div>
+                            <div class="c-2">
+                                <a href="{{ message.fb_data.link }}" target="_blank">{{ message.fb_data.link }}</a>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div>
-                            <label>Likes:</label>
-                            <strong>Total</strong>: {{ message.fb_likes.total }}
+                    <div class="form-row grp-row grp-cells-1">
+                        <div class="l-2c-fluid l-d-4">
+                            <div class="c-1">
+                                <label>Likes ({{ message.fb_likes.total }}):</label>
+                            </div>
                             {% if message.fb_likes.total %}
                             <p>
-                                <strong>Likers</strong>:
                                 {% for liker in message.fb_likes.data %}
                                 <a href="https://www.facebook.com/{{ liker.id }}">{{ liker.name }}</a>{% if not forloop.last %},{% endif %}
                                 {% endfor %}
@@ -29,26 +33,34 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div>
-                            <label>Comments:</label>
-                            <strong>Total</strong>: {{ message.fb_comments.total }}
+                    <div class="form-row grp-row grp-cells-1">
+                        <div class="l-2c-fluid l-d-4">
+                            <div class="c-1">
+                                <label>Comments ({{ message.fb_comments.total }}):</label>
+                            </div>
 
                             {% if message.fb_comments.total %}
-                            {% for comment in message.fb_comments.data %}
-                            <p>
-                                <strong><a href="https://www.facebook.com/{{ comment.from.id }}">{{ comment.from.name }}</a></strong>:
-                                {{ comment.message }}
-                            </p>
-                            {% endfor %}
+                                <ul>
+                                    {% for comment in message.fb_comments.data %}
+                                        <li class="grp-row">
+                                            <strong><a href="https://www.facebook.com/{{ comment.from.id }}">{{ comment.from.name }}</a></strong>:
+                                            {{ comment.message }}
+                                            <p class="help grp-help">
+                                                <small>likes: {{ comment.like_count }}</small>
+                                            </p>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div>
-                            <label>Shares:</label>
-                            <strong>Total</strong>: {{ message.fb_data.shares.count }}
+                    <div class="form-row grp-row grp-cells-1">
+                        <div class="l-2c-fluid l-d-4">
+                            <div class="c-1">
+                                <label>Shares:</label>
+                            </div>
+                            <strong>Total</strong>: {{ message.fb_data.shares.count|default:0 }}
                         </div>
                     </div>
 
