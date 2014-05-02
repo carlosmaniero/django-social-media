@@ -46,5 +46,16 @@ class SocialMediaProfileAdmin(admin.ModelAdmin):
 
         return my_urls + urls
 
+
+class SocialMediaPostAdmin(admin.ModelAdmin):
+    list_display = ['publish_at', 'message', 'link', 'published_in']
+    list_filter = ['networks__name']
+    search_fields = ['message', 'link']
+    date_hierarchy = 'publish_at'
+    exclude = ('fb_id',)
+
+    def published_in(self, obj):
+        return ', '.join([net.name for net in obj.networks.all()])
+
 admin.site.register(SocialMediaProfile, SocialMediaProfileAdmin)
-admin.site.register(SocialMediaPost)
+admin.site.register(SocialMediaPost, SocialMediaPostAdmin)

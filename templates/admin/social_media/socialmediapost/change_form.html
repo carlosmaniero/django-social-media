@@ -1,0 +1,57 @@
+{% extends "admin/change_form.html" %}
+
+{% block after_field_sets %}
+<h1>Facebook information</h1>
+
+{% with message=adminform.form.instance %}
+
+<fieldset class="module aligned ">
+    <div class="form-row">
+        <div>
+            <label>Publication URL:</label>
+            <a href="{{ message.fb_data.link }}" target="_blank">{{ message.fb_data.link }}</a>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div>
+            <label>Likes:</label>
+            <strong>Total</strong>: {{ message.fb_likes.total }}
+            {% if message.fb_likes.total %}
+            <p>
+                <strong>Likers</strong>:
+                {% for liker in message.fb_likes.data %}
+                    <a href="https://www.facebook.com/{{ liker.id }}">{{ liker.name }}</a>{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div>
+            <label>Comments:</label>
+            <strong>Total</strong>: {{ message.fb_comments.total }}
+
+            {% if message.fb_comments.total %}
+                {% for comment in message.fb_comments.data %}
+                    <p>
+                        <strong><a href="https://www.facebook.com/{{ comment.from.id }}">{{ comment.from.name }}</a></strong>:
+                        {{ comment.message }}
+                    </p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div>
+            <label>Shares:</label>
+            <strong>Total</strong>: {{ message.fb_data.shares.count }}
+        </div>
+    </div>
+
+</fieldset>
+
+{% endwith %}
+{% endblock %}
