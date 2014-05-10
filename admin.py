@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.conf.urls import patterns
 from django.contrib import admin
+from django.contrib.admin.util import unquote
 from django.contrib.contenttypes.generic import GenericStackedInline
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
@@ -50,6 +51,10 @@ class SocialMediaMixin(object):
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
+
+        obj = self.get_object(request, unquote(object_id))
+        extra_context['social_media_publication'] = obj.social_media_publications.all().order_by('-publish_at')
+
         extra_context['share_form'] = SocialMediaForm(initial={
             'content_type': ContentType.objects.get(app_label=self.opts.app_label, model=self.opts.model_name),
             'object_id': object_id,
