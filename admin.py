@@ -1,36 +1,11 @@
 from django.conf import settings
 from django.conf.urls import patterns
 from django.contrib import admin
-from django.contrib.admin import widgets
 from django.contrib.contenttypes.generic import GenericStackedInline
 from django.contrib.contenttypes.models import ContentType
-from django.forms import ModelForm, HiddenInput, ModelMultipleChoiceField
 from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext as _
-from api import facebook_api
-from fields import LinkWidget
-from models import SocialMediaProfile, SocialMediaPost, NetWork, NetworkPosts
-
-
-class SocialMediaProfileForm(ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super(SocialMediaProfileForm, self).__init__(*args, **kwargs)
-
-        if not self.instance.pk:
-            self.fields['fb_access_token'].widget = HiddenInput()
-        else:
-
-
-            self.fields['fb_access_token'].widget = LinkWidget(_('Connect with Facebook'),
-                                                               facebook_api.login_url(settings.FACEBOOK_SCOPES))
-
-            if self.instance.fb_access_token:
-                self.fields['fb_access_token'].help_text = \
-                    _('Current:') + ' ' + self.instance.fb_access_token[0:20] + '...'
-
-    class Meta:
-        model = SocialMediaProfile
+from forms import SocialMediaPostForm, SocialMediaProfileForm, SocialMediaForm
+from models import SocialMediaProfile, SocialMediaPost
 
 
 class SocialMediaProfileAdmin(admin.ModelAdmin):
@@ -50,24 +25,6 @@ class SocialMediaProfileAdmin(admin.ModelAdmin):
         return my_urls + urls
 
 
-class SocialMediaPostForm(ModelForm):
-
-    networks = ModelMultipleChoiceField(queryset=NetWork.objects.all())
-
-    def save_m2m(self):
-        obj = self.instance
-        for network in self.cleaned_data['networks']:
-            NetworkPosts.objects.create(network=network, post=obj)
-
-    def save(self, commit=True):
-        obj = super(SocialMediaPostForm, self).save(commit=True)
-        return obj
-
-    class Meta:
-        model = SocialMediaPost
-        exclude = ('networks', 'fb_id')
-
-
 class SocialMediaPostAdmin(admin.ModelAdmin):
     list_display = ['message', 'link']
     list_filter = ['networks__name']
@@ -81,14 +38,6 @@ class SocialMediaInline(GenericStackedInline):
     model = SocialMediaPost
     form = SocialMediaPostForm
     extra = 1
-
-
-class SocialMediaForm(SocialMediaPostForm):
-    def __init__(self, *args, **kwargs):
-        super(SocialMediaForm, self).__init__(*args, **kwargs)
-        self.fields['publish_at'].widget = widgets.AdminSplitDateTime()
-        self.fields['object_id'].widget = HiddenInput()
-        self.fields['content_type'].widget = HiddenInput()
 
 
 class SocialMediaMixin(object):
