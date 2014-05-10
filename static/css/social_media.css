@@ -1,0 +1,25 @@
+#social-media-share{
+    width: 300px;
+    min-width: 300px;
+    display: inline-block;
+    float: none;
+}
+#social-media-share *{
+    max-width: 100% !important;
+}
+#social-media-share .field-wrapper > *{
+    width: 100%;
+    box-sizing: border-box;
+}
+#shared-object:after{
+    content: '.';
+    clear: both;
+    width: 1px;
+    height: 0;
+    visibility: hidden;
+}
+
+#social-media-share input[type=submit].default{
+    float: right;
+    margin: 10px;
+}

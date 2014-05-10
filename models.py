@@ -1,8 +1,9 @@
 from __future__ import unicode_literals
-from django.contrib import messages
+from django.contrib.contenttypes.generic import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
-from django.db.models import Model, CharField, TextField, URLField, DateTimeField, ManyToManyField, ForeignKey
-from django.utils.timezone import now
+from django.db.models import Model, CharField, TextField, URLField, DateTimeField, ManyToManyField, ForeignKey, \
+    PositiveIntegerField
 from django.utils.translation import ugettext as _
 from django.db.models.signals import pre_save
 
@@ -72,6 +73,9 @@ class SocialMediaPost(Model):
     publish_at = DateTimeField(verbose_name=_('Publish at'), null=True, blank=True, help_text=_("Blank to now"))
     networks = ManyToManyField(NetWork, through=NetworkPosts)
     fb_id = CharField(max_length=32, null=True, blank=True)
+    content_type = ForeignKey(ContentType, null=True, blank=True)
+    object_id = PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     def get_networks(self):
         return NetworkPosts.objects.filter(post=self)
