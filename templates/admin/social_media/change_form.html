@@ -12,26 +12,63 @@
         <h1>{% trans 'Social Network Information' %}</h1>
 
         {% if share_form %}
-            <fieldset id="social-media-share" class="grp-module module">
-                <h2>{% trans 'Share this' %}</h2>
-                {% for field in share_form %}
-                    {% if field.is_hidden %}
-                        {{ field }}
-                    {% else %}
-                        <div class="grp-row grp-cells-1 form-row">
-                            <div class="l-1c-fluid l-d-4">
+            <form action="" id="shared-media-form">
+                <fieldset id="social-media-share" class="grp-module module">
+                    <h2>{% trans 'Share this' %}</h2>
 
-                                <div class="field-wrapper">
-                                    <div><label for="{{ field.auto_id }}">{{ field.label }}</label></div>
-                                    {{ field }}
+                    <ul class="grp-messagelist messagelist" id="social-media-message-list">
+                        <li class="grp-success success">{% trans 'The post as added successfully.' %}</li>
+                    </ul>
+
+                    {% for field in share_form %}
+                        {% if field.is_hidden %}
+                            {{ field }}
+                        {% else %}
+                            <div class="grp-row grp-cells-1 form-row shared-field-row" id="shared-field-{{ field.name }}">
+                                <div class="l-1c-fluid l-d-4">
+
+                                    <div class="field-wrapper">
+                                        <div><label for="{{ field.auto_id }}" {% if field.field.required %}class="required" {% endif %} >{{ field.label }}</label></div>
+                                        {{ field }}
+                                    </div>
+
                                 </div>
-
                             </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-                <input type="submit" name="_publish" class="grp-button grp-default default" value="{% trans 'Publish' %}">
-            </fieldset>
+                        {% endif %}
+                    {% endfor %}
+                    <input type="submit" name="_publish" id="shared-object-publish" class="grp-button grp-default default" value="{% trans 'Publish' %}">
+                </fieldset>
+            </form>
         {% endif %}
     </div>
+
+    <script type="text/javascript">
+        django.jQuery(function(){
+            var $ = django.jQuery;
+            var $form = $('#shared-media-form');
+
+            $form.submit(function(e){
+                e.preventDefault();
+                $('.shared-field-row').removeClass('grp-errors errors')
+                $.post("{% url 'social_media_publication_json' %}", $(this).serialize(), function(data){
+                    console.log(data);
+                    if(data['error']){
+                        var errors = data['error'];
+                        for(var error in errors){
+                            var $field_row = $('#shared-field-' + error);
+                            $field_row.addClass('grp-errors errors');
+                            var ul_error = $('<ul class="errorlist" />');
+
+                            for(var n in data['error'][error])
+                                ul_error.append('<li>' + data['error'][error][n] + '</li>');
+
+                            $field_row.append(ul_error)
+                        }
+                    }else if(data['post']){
+                        $('#social-media-message-list').show();
+                    }
+                });
+            })
+        })
+    </script>
 {% endblock %}

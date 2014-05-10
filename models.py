@@ -101,6 +101,7 @@ def publish_now(sender, **kwargs):
                 facebook_api.publish(obj, obj.post)
 
         except Exception as e:
+
             raise e
 
 pre_save.connect(publish_now, sender=NetworkPosts)
