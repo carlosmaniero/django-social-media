@@ -2,8 +2,9 @@ from __future__ import unicode_literals
 import json
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, HttpResponse
+from django.utils.translation import ugettext as _
 from django.views.generic import View
-from api import facebook_api
+from api import facebook_api, FacebookException
 from forms import SocialMediaForm
 from models import SocialMediaProfile
 
@@ -31,11 +32,19 @@ class CreatePublicationJson(View):
 
             if form.is_valid():
                 obj = form.save(commit=True)
-                form.save_m2m()
-                print obj
+
+                try:
+                    form.save_m2m()
+                except FacebookException as e:
+                    return HttpResponse(json.dumps({'error': _('Unable to post on') + ' ' + e.network.name}),
+                                        status=500, content_type="application/json")
+                except Exception as e:
+                    return HttpResponse(json.dumps({'error': _('Unable to perform all publications')}),
+                                        status=500, content_type="application/json")
+
                 return HttpResponse(json.dumps({'post': obj.pk}), content_type="application/json")
 
             return HttpResponse(json.dumps({'error': form.errors}), content_type="application/json")
 
         else:
-            return HttpResponse(json.dumps({'Keep out': True}), status=403, content_type="application/json")
+            return HttpResponse(json.dumps({'error': 'Access Denied'}), status=403, content_type="application/json")

@@ -4,6 +4,7 @@ import urlparse
 import json
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from exept import FacebookException
 import models
 
 
@@ -13,12 +14,14 @@ class FacebookApi(object):
     secret_id = ''
     domain = ''
     access_token = ''
+    user_id = ''
 
     def __init__(self, app_id='', secret_id='', domain='', access_token='', user_id='me'):
         self.app_id = app_id or settings.FACEBOOK_APP_ID
         self.secret_id = secret_id or settings.FACEBOOK_APP_SECRET
         self.domain = domain or settings.FACEBOOK_REDIRECT_DOMAIN
         self.access_token = access_token
+        self.user_id = user_id
 
         if not access_token:
             item, created = models.SocialMediaProfile.objects.get_or_create(pk=1)
@@ -58,12 +61,15 @@ class FacebookApi(object):
         if message.link:
             data['link'] = message.link
 
-        url = 'https://graph.facebook.com/me/feed?access_token=' + self.access_token
+        url = 'https://graph.facebook.com/' + self.user_id + '/feed?access_token=' + self.access_token
 
-        data = urllib.urlencode(data)
-        req = urllib2.Request(url, data)
-        response = urllib2.urlopen(req)
-        ret = json.loads(response.read())
+        try:
+            data = urllib.urlencode(data)
+            req = urllib2.Request(url, data)
+            response = urllib2.urlopen(req)
+            ret = json.loads(response.read())
+        except Exception as e:
+            raise FacebookException(e.message, self.user_id)
 
         obj.network_post_id = ret['id']
 

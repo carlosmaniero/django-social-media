@@ -6,6 +6,7 @@ from django.db.models import Model, CharField, TextField, URLField, DateTimeFiel
     PositiveIntegerField
 from django.utils.translation import ugettext as _
 from django.db.models.signals import pre_save
+from exept import FacebookException
 
 
 class SocialMediaProfile(Model):
@@ -13,6 +14,7 @@ class SocialMediaProfile(Model):
 
 
 class NetWork(Model):
+    FACEBOOK = 'Facebook'
     network = CharField(max_length=32, null=True, blank=True)
     network_id = CharField(max_length=32, null=True, blank=True)
     name = CharField(max_length=32, null=True, blank=True)
@@ -56,7 +58,6 @@ class NetworkPosts(Model):
         from api import facebook_api
         if not self._fb_comments:
             return facebook_api.get_comments(self)
-        print self._fb_comments
         return self._fb_comments
 
     @property
@@ -89,8 +90,6 @@ def publish_now(sender, **kwargs):
         try:
             from api import FacebookApi
 
-            print obj.network.network
-
             if obj.network.network == 'Facebook':
 
                 access_token = ''
@@ -100,8 +99,9 @@ def publish_now(sender, **kwargs):
                 facebook_api = FacebookApi(access_token=access_token, user_id=obj.network.network_id)
                 facebook_api.publish(obj, obj.post)
 
+        except FacebookException as e:
+            raise e
         except Exception as e:
-
             raise e
 
 pre_save.connect(publish_now, sender=NetworkPosts)

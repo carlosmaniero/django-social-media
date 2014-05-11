@@ -16,8 +16,12 @@
                 <fieldset id="social-media-share" class="grp-module module">
                     <h2>{% trans 'Share this' %}</h2>
 
-                    <ul class="grp-messagelist messagelist" id="social-media-message-list">
+                    <ul class="grp-messagelist messagelist" id="social-media-success-list">
                         <li class="grp-success success">{% trans 'The post as added successfully.' %}</li>
+                    </ul>
+
+                    <ul class="grp-messagelist messagelist" id="social-media-error-list">
+                        <li class="grp-error error"></li>
                     </ul>
 
                     {% for field in share_form %}
@@ -49,25 +53,40 @@
 
             $form.submit(function(e){
                 e.preventDefault();
-                $('.shared-field-row').removeClass('grp-errors errors')
+                $('.shared-field-row').removeClass('grp-errors errors');
+                $('#social-media-error-list, #social-media-success-list').hide();
+
                 $.post("{% url 'social_media_publication_json' %}", $(this).serialize(), function(data){
                     console.log(data);
                     if(data['error']){
                         var errors = data['error'];
-                        for(var error in errors){
-                            var $field_row = $('#shared-field-' + error);
-                            $field_row.addClass('grp-errors errors');
-                            var ul_error = $('<ul class="errorlist" />');
 
-                            for(var n in data['error'][error])
-                                ul_error.append('<li>' + data['error'][error][n] + '</li>');
+                        if($.isArray(error))
+                            for(var error in errors){
+                                var $field_row = $('#shared-field-' + error);
+                                $field_row.addClass('grp-errors errors');
+                                var ul_error = $('<ul class="errorlist" />');
 
-                            $field_row.append(ul_error)
+                                for(var n in data['error'][error])
+                                    ul_error.append('<li>' + data['error'][error][n] + '</li>');
+
+                                $field_row.append(ul_error)
+                            }
+                        else{
+                            var $error = $("#social-media-error-list");
+                            $error.find('li').text(errors);
+                            $error.show();
                         }
                     }else if(data['post']){
-                        $('#social-media-message-list').show();
+                        $('#social-media-success-list').show();
                     }
-                });
+                }).error(function(xhr){
+                    var data = $.parseJSON(xhr.responseText);
+                    var errors = data['error'];
+                    var $error = $("#social-media-error-list");
+                    $error.find('li').text(errors);
+                    $error.show();
+                })
             })
         })
     </script>

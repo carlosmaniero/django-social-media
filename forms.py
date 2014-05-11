@@ -33,14 +33,11 @@ class SocialMediaPostForm(ModelForm):
 
     def save_m2m(self):
         obj = self.instance
-        print '*' * 5
         for network in self.cleaned_data['networks']:
             NetworkPosts.objects.create(network=network, post=obj)
 
     def save(self, commit=True):
         obj = super(SocialMediaPostForm, self).save(commit=True)
-        print obj
-        print '-' * 30
         return obj
 
     class Meta:

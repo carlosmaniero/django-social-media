@@ -24,6 +24,6 @@
     margin: 10px;
 }
 
-#social-media-message-list{
+#social-media-success-list, #social-media-error-list{
     display: none;
 }
