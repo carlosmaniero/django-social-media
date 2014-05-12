@@ -34,7 +34,18 @@ class NetWork(Model):
         return self.__str__()
 
 
+class GoogleAnalyticsCampaign(Model):
+    """Model for Google analytics campaign"""
+    title = CharField(verbose_name=_('Title of the campaign'), max_length=128, null=True, blank=True)
+    campaign = CharField(verbose_name=_('Name of campaign'), max_length=64,
+                         help_text=_('Use only character, numbers and underscore.'))
+
+    def __unicode__(self):
+        return '[{}] - {}'.format(self.campaign, self.title)
+
+
 class NetworkPosts(Model):
+    """Post in a network"""
     network = ForeignKey(NetWork)
     post = ForeignKey('SocialMediaPost')
     network_post_id = CharField(max_length=256, null=True, blank=True)
@@ -72,16 +83,8 @@ class NetworkPosts(Model):
         return self._fb_shares
 
 
-class GoogleAnalyticsCampaign(Model):
-    title = CharField(verbose_name=_('Title of the campaign'), max_length=128, null=True, blank=True)
-    campaign = CharField(verbose_name=_('Name of campaign'), max_length=64,
-                         help_text=_('Use only character, numbers and underscore.'))
-
-    def __unicode__(self):
-        return '[{}] - {}'.format(self.campaign, self.title)
-
-
 class SocialMediaPost(Model):
+    """Original post model"""
     message = TextField(verbose_name=_("Publication text"), null=True, blank=True)
     link = URLField(verbose_name=_('Post URL'), null=True, blank=True)
     publish_at = DateTimeField(verbose_name=_('Publish at'), null=True, blank=True, help_text=_("Blank to now"))
