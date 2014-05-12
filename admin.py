@@ -6,7 +6,7 @@ from django.contrib.contenttypes.generic import GenericStackedInline
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from forms import SocialMediaPostForm, SocialMediaProfileForm, SocialMediaForm
-from models import SocialMediaProfile, SocialMediaPost
+from models import SocialMediaProfile, SocialMediaPost, GoogleAnalyticsCampaign
 
 
 class SocialMediaProfileAdmin(admin.ModelAdmin):
@@ -31,8 +31,12 @@ class SocialMediaPostAdmin(admin.ModelAdmin):
     list_filter = ['networks__name']
     search_fields = ['message', 'link']
     date_hierarchy = 'publish_at'
-    exclude = ('fb_id', 'networks')
+    exclude = ('fb_id', 'networks', 'content_type', 'object_id')
     form = SocialMediaPostForm
+
+
+class GoogleAnalyticsCampaignAdmin(admin.ModelAdmin):
+    search_fields = list_display = ['campaign', 'title']
 
 
 class SocialMediaInline(GenericStackedInline):
@@ -65,3 +69,4 @@ class SocialMediaMixin(object):
 
 admin.site.register(SocialMediaProfile, SocialMediaProfileAdmin)
 admin.site.register(SocialMediaPost, SocialMediaPostAdmin)
+admin.site.register(GoogleAnalyticsCampaign, GoogleAnalyticsCampaignAdmin)

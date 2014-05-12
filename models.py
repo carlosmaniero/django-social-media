@@ -14,6 +14,10 @@ class SocialMediaProfile(Model):
 
 
 class NetWork(Model):
+    """Networks Model
+
+    Networks are the chanel of you will post
+    """
     FACEBOOK = 'Facebook'
     network = CharField(max_length=32, null=True, blank=True)
     network_id = CharField(max_length=32, null=True, blank=True)
@@ -68,6 +72,15 @@ class NetworkPosts(Model):
         return self._fb_shares
 
 
+class GoogleAnalyticsCampaign(Model):
+    title = CharField(verbose_name=_('Title of the campaign'), max_length=128, null=True, blank=True)
+    campaign = CharField(verbose_name=_('Name of campaign'), max_length=64,
+                         help_text=_('Use only character, numbers and underscore.'))
+
+    def __unicode__(self):
+        return '[{}] - {}'.format(self.campaign, self.title)
+
+
 class SocialMediaPost(Model):
     message = TextField(verbose_name=_("Publication text"), null=True, blank=True)
     link = URLField(verbose_name=_('Post URL'), null=True, blank=True)
@@ -77,6 +90,7 @@ class SocialMediaPost(Model):
     content_type = ForeignKey(ContentType, null=True, blank=True)
     object_id = PositiveIntegerField(null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
+    campaign = ForeignKey(GoogleAnalyticsCampaign, null=True, blank=True)
 
     def get_networks(self):
         return NetworkPosts.objects.filter(post=self)
