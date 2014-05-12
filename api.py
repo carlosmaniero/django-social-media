@@ -59,7 +59,10 @@ class FacebookApi(object):
         if message.message:
             data['message'] = message.message
         if message.link:
-            data['link'] = message.link
+            data['link'] = "{}?utm_source=facebook&utm_medium={}".format(message.link, self.user_id)
+
+            if message.campaign:
+                data['link'] += '&utm_campaign=' + message.campaign.campaign
 
         url = 'https://graph.facebook.com/' + self.user_id + '/feed?access_token=' + self.access_token
 

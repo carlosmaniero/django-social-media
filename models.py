@@ -37,7 +37,7 @@ class NetWork(Model):
 class GoogleAnalyticsCampaign(Model):
     """Model for Google analytics campaign"""
     title = CharField(verbose_name=_('Title of the campaign'), max_length=128, null=True, blank=True)
-    campaign = CharField(verbose_name=_('Name of campaign'), max_length=64,
+    campaign = CharField(verbose_name=_('Name of campaign'), max_length=64, unique=True,
                          help_text=_('Use only character, numbers and underscore.'))
 
     def __unicode__(self):
